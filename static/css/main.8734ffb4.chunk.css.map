@@ -1,0 +1,1 @@
+{"version":3,"sources":["app.css"],"names":[],"mappings":"AAAA,MACE,UAAW,CACX,UAAY,CACZ,aACF","file":"main.8734ffb4.chunk.css","sourcesContent":[".name {\n  float: left;\n  color: white;\n  margin: 0px 24px;\n}\n\n/* .ant-layout-content {\n  background-color: rgba(0, 0, 0, 0.8);\n} */\n"]}
