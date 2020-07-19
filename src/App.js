@@ -1,29 +1,73 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Menu, Card } from "antd";
+import { Breadcrumb, Layout, Menu, Card } from "antd";
 import Axios from "axios";
-import "antd/dist/antd.css";
+import Topic from "./components/Topic";
+import Image from "./components/Image";
 import "./app.css";
 
 const { Header, Content } = Layout;
+const { SubMenu } = Menu;
 const url = "https://digitalblasphemy.com";
 
 function App() {
   const [categories, setCategories] = useState([]);
+  const [newest, setNewest] = useState([]);
+  const [themes, setThemes] = useState([]);
+  const [free, setFree] = useState([]);
+  const [years, setYears] = useState([]);
+
+  const [topic, setTopic] = useState({
+    name: "Abstract",
+    href: "y=todos&t=1&w=&h=&r=1&f=",
+  });
+  const [selectedImg, setSelectedImg] = useState({
+    bigthumbnail: "/graphics/640x480/flourish1640.jpg",
+    free: 0,
+    gallery: "Abstracts",
+    href: "/cgi-bin/preview_json.cgi?i=flourish1",
+    id: "flourish1",
+    idx: 0,
+    rating: 8.85,
+    thumbnail: "/graphics/thumbs/flourish1_xthumb.jpg",
+    title: "The Flourish",
+    year: "todos",
+  });
 
   useEffect(() => {
-    Axios.get("https://digitalblasphemy.com/galleries.json").then(({ data }) =>
-      setCategories(data)
+    Axios.get("https://digitalblasphemy.com/galleries.json").then(
+      ({ data }) => {
+        data = data.map((i) => {
+          return { ...i, href: i.href.split("?")[1] };
+        });
+        const menuItem = (i) => (
+          <Menu.Item
+            key={i.name}
+            onClick={() => setTopic({ name: i.name, href: i.href })}
+          >
+            {i.name}
+          </Menu.Item>
+        );
+
+        setCategories(data);
+        setNewest(data.filter((i) => i.name === "Newest").map(menuItem));
+        setThemes(
+          data
+            .slice(
+              1,
+              data.findIndex((i) => i.name === "FREE Samples")
+            )
+            .map(menuItem)
+        );
+        setFree(data.filter((i) => i.name === "FREE Samples").map(menuItem));
+        setYears(
+          data
+            .slice(data.findIndex((i) => i.name === "FREE Samples") + 1)
+            .map(menuItem)
+        );
+      }
     );
   }, []);
 
-  const getJSON = (url) => {
-    Axios.get("https://digitalblasphemy.com" + url).then(
-      ({ data }) => console.log(data)
-      // setCategories(data)
-    );
-  };
-
-  console.log(categories);
   const cards = categories.map((i) => (
     <Card
       hoverable
@@ -36,7 +80,7 @@ function App() {
           src={url + i.thumb}
         />
       }
-      onClick={() => getJSON(i.href)}
+      onClick={() => setTopic({ name: i.name, href: i.href })}
       title={i.name}
     ></Card>
   ));
@@ -44,13 +88,37 @@ function App() {
   return (
     <Layout className="layout">
       <Header>
-        <div className="name">DB Gallery</div>
+        <div className="name" onClick={() => setTopic()}>
+          DB Gallery
+        </div>
         <Menu theme="dark" mode="horizontal">
-          <Menu.Item key="1">1</Menu.Item>
-          <Menu.Item key="2">2</Menu.Item>
+          {newest}
+          <SubMenu title="Categories">{themes}</SubMenu>
+          {free}
+          <SubMenu title="Years">{years}</SubMenu>
         </Menu>
       </Header>
-      <Content style={{ display: "flex", flexWrap: "wrap" }}>{cards}</Content>
+      <Content style={{ display: "flex", flexWrap: "wrap" }}>
+        <Breadcrumb style={{ margin: "24px 0px 0px 10px" }}>
+          <Breadcrumb.Item
+            onClick={() => setTopic()}
+            style={{ cursor: "pointer" }}
+          >
+            Home
+          </Breadcrumb.Item>
+          <Breadcrumb.Item onClick={() => setSelectedImg()}>
+            {topic.name}
+          </Breadcrumb.Item>
+          {selectedImg && (
+            <Breadcrumb.Item>{selectedImg.title}</Breadcrumb.Item>
+          )}
+        </Breadcrumb>
+        {!topic && !selectedImg && cards}
+        {topic && !selectedImg && (
+          <Topic listAttr={topic.href} setSelectedImg={setSelectedImg}></Topic>
+        )}
+        {selectedImg && <Image href={selectedImg.href} />}
+      </Content>
     </Layout>
   );
 }

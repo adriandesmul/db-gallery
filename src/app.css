@@ -1,4 +1,9 @@
 .name {
   float: left;
   color: white;
+  margin: 0px 24px;
 }
+
+/* .ant-layout-content {
+  background-color: rgba(0, 0, 0, 0.8);
+} */
